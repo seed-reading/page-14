@@ -1,0 +1,767 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>认知性好奇 · AI时代最稀缺的提问力</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@300;400;500;700&family=Noto+Sans+SC:wght@300;400;500&family=Playfair+Display:ital,wght@0,400;1,400&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --ink: #1c1410;
+    --ink-light: #4a3f35;
+    --paper: #faf6ef;
+    --paper-warm: #f5ede0;
+    --rust: #b05a2a;
+    --rust-light: #d4845a;
+    --sage: #7a8c6e;
+    --sage-light: #a8b89a;
+    --gold: #c49a3c;
+    --gold-light: #e8c878;
+    --blush: #d4967a;
+    --line: rgba(28,20,16,0.12);
+  }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--paper);
+    color: var(--ink);
+    font-family: 'Noto Serif SC', serif;
+    line-height: 1.9;
+    overflow-x: hidden;
+  }
+
+  /* 纹理背景 */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+    pointer-events: none;
+    z-index: 1000;
+    opacity: 0.6;
+  }
+
+  /* Cover */
+  .cover {
+    min-height: 100vh;
+    display: grid;
+    grid-template-rows: 1fr auto;
+    padding: 60px 40px 50px;
+    position: relative;
+    overflow: hidden;
+    background: var(--ink);
+  }
+
+  .cover-bg {
+    position: absolute;
+    inset: 0;
+    background: 
+      radial-gradient(ellipse 80% 60% at 20% 80%, rgba(176,90,42,0.25) 0%, transparent 60%),
+      radial-gradient(ellipse 60% 80% at 85% 10%, rgba(122,140,110,0.2) 0%, transparent 60%),
+      radial-gradient(ellipse 40% 40% at 50% 50%, rgba(196,154,60,0.08) 0%, transparent 70%);
+  }
+
+  .cover-deco {
+    position: absolute;
+    top: 0; right: 0;
+    width: 45%;
+    height: 100%;
+    opacity: 0.06;
+    background: repeating-linear-gradient(
+      -45deg,
+      #fff 0px,
+      #fff 1px,
+      transparent 1px,
+      transparent 20px
+    );
+  }
+
+  .cover-circle {
+    position: absolute;
+    border-radius: 50%;
+    border: 1px solid rgba(255,255,255,0.08);
+  }
+  .cover-circle:nth-child(1) { width: 500px; height: 500px; top: -150px; right: -100px; }
+  .cover-circle:nth-child(2) { width: 300px; height: 300px; bottom: 100px; right: 150px; border-color: rgba(196,154,60,0.15); }
+  .cover-circle:nth-child(3) { width: 180px; height: 180px; top: 40%; left: 5%; border-color: rgba(122,140,110,0.2); }
+
+  .cover-content {
+    position: relative;
+    z-index: 10;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    max-width: 800px;
+  }
+
+  .cover-label {
+    font-family: 'Noto Sans SC', sans-serif;
+    font-size: 11px;
+    letter-spacing: 0.4em;
+    color: var(--gold-light);
+    text-transform: uppercase;
+    margin-bottom: 40px;
+    opacity: 0;
+    animation: fadeUp 1s 0.3s forwards;
+  }
+
+  .cover-title {
+    font-size: clamp(42px, 8vw, 80px);
+    font-weight: 300;
+    color: #fff;
+    line-height: 1.15;
+    margin-bottom: 12px;
+    opacity: 0;
+    animation: fadeUp 1s 0.5s forwards;
+  }
+
+  .cover-title em {
+    font-style: normal;
+    color: var(--gold-light);
+    display: block;
+  }
+
+  .cover-subtitle {
+    font-size: clamp(15px, 2.5vw, 20px);
+    color: rgba(255,255,255,0.55);
+    font-weight: 300;
+    margin-top: 16px;
+    margin-bottom: 50px;
+    max-width: 580px;
+    opacity: 0;
+    animation: fadeUp 1s 0.7s forwards;
+  }
+
+  .cover-line {
+    width: 60px;
+    height: 2px;
+    background: var(--rust-light);
+    margin-bottom: 50px;
+    opacity: 0;
+    animation: fadeUp 1s 0.9s forwards;
+  }
+
+  .cover-quote {
+    font-size: 14px;
+    color: rgba(255,255,255,0.45);
+    font-style: italic;
+    font-family: 'Playfair Display', 'Noto Serif SC', serif;
+    max-width: 480px;
+    opacity: 0;
+    animation: fadeUp 1s 1.1s forwards;
+  }
+
+  .cover-footer {
+    position: relative;
+    z-index: 10;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    opacity: 0;
+    animation: fadeIn 1s 1.5s forwards;
+  }
+
+  .cover-nav {
+    display: flex;
+    gap: 28px;
+    font-family: 'Noto Sans SC', sans-serif;
+    font-size: 11px;
+    letter-spacing: 0.2em;
+    color: rgba(255,255,255,0.35);
+  }
+
+  .cover-scroll {
+    font-family: 'Noto Sans SC', sans-serif;
+    font-size: 11px;
+    color: rgba(255,255,255,0.35);
+    letter-spacing: 0.2em;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .scroll-line {
+    width: 40px;
+    height: 1px;
+    background: rgba(255,255,255,0.2);
+  }
+
+  /* Main content */
+  .main {
+    max-width: 760px;
+    margin: 0 auto;
+    padding: 80px 40px 120px;
+  }
+
+  /* Pull quote / opener */
+  .opener {
+    margin-bottom: 80px;
+    padding: 50px 0;
+    border-top: 2px solid var(--rust);
+    border-bottom: 1px solid var(--line);
+    position: relative;
+  }
+
+  .opener::before {
+    content: '\201C';
+    font-family: 'Playfair Display', serif;
+    font-size: 120px;
+    color: var(--rust);
+    opacity: 0.15;
+    position: absolute;
+    top: -10px;
+    left: -20px;
+    line-height: 1;
+  }
+
+  .opener p {
+    font-size: clamp(20px, 3vw, 25px);
+    font-weight: 300;
+    line-height: 1.85;
+    color: var(--ink);
+  }
+
+  .opener em {
+    font-style: normal;
+    color: var(--rust);
+    font-weight: 500;
+  }
+
+  /* Sections */
+  .section {
+    margin-bottom: 72px;
+    opacity: 0;
+    transform: translateY(30px);
+    transition: opacity 0.8s ease, transform 0.8s ease;
+  }
+
+  .section.visible {
+    opacity: 1;
+    transform: none;
+  }
+
+  .section-header {
+    display: flex;
+    align-items: baseline;
+    gap: 16px;
+    margin-bottom: 28px;
+  }
+
+  .section-num {
+    font-family: 'Playfair Display', 'Noto Serif SC', serif;
+    font-size: 48px;
+    color: var(--rust);
+    opacity: 0.2;
+    line-height: 1;
+    font-weight: 400;
+    flex-shrink: 0;
+  }
+
+  .section-title {
+    font-size: clamp(18px, 2.5vw, 23px);
+    font-weight: 500;
+    color: var(--ink);
+    line-height: 1.4;
+  }
+
+  .section-title span {
+    display: block;
+    font-size: 12px;
+    font-family: 'Noto Sans SC', sans-serif;
+    font-weight: 300;
+    color: var(--rust-light);
+    letter-spacing: 0.3em;
+    margin-bottom: 4px;
+    text-transform: uppercase;
+  }
+
+  .section p {
+    font-size: 16px;
+    color: var(--ink-light);
+    margin-bottom: 20px;
+    line-height: 1.95;
+  }
+
+  .section p:last-child { margin-bottom: 0; }
+
+  /* Highlight box */
+  .highlight {
+    background: var(--paper-warm);
+    border-left: 3px solid var(--rust);
+    padding: 24px 28px;
+    margin: 32px 0;
+    border-radius: 0 6px 6px 0;
+  }
+
+  .highlight p {
+    font-size: 15.5px;
+    color: var(--ink);
+    margin-bottom: 0;
+    font-weight: 400;
+  }
+
+  .highlight em {
+    font-style: normal;
+    color: var(--rust);
+    font-weight: 500;
+  }
+
+  /* Chain flow */
+  .chain-flow {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 10px;
+    margin: 28px 0;
+    padding: 22px 24px;
+    background: #fff;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+  }
+
+  .chain-step {
+    font-size: 13.5px;
+    font-family: 'Noto Sans SC', sans-serif;
+    color: var(--ink);
+    background: var(--paper-warm);
+    padding: 6px 12px;
+    border-radius: 4px;
+    border: 1px solid rgba(176,90,42,0.18);
+  }
+
+  .chain-arrow {
+    color: var(--rust);
+    font-weight: 500;
+    font-size: 14px;
+  }
+
+  /* Comparison Grid */
+  .qualities {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 20px;
+    margin: 32px 0;
+  }
+
+  .quality-card {
+    padding: 28px 24px;
+    background: #fff;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    text-align: left;
+    transition: transform 0.3s, box-shadow 0.3s, border-color 0.3s;
+  }
+
+  .quality-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 32px rgba(28,20,16,0.08);
+    border-color: var(--rust-light);
+  }
+
+  .quality-icon {
+    font-size: 28px;
+    display: block;
+    margin-bottom: 12px;
+  }
+
+  .quality-name {
+    font-size: 17px;
+    font-weight: 500;
+    color: var(--ink);
+    margin-bottom: 10px;
+  }
+
+  .quality-tag {
+    display: inline-block;
+    font-size: 11px;
+    font-family: 'Noto Sans SC', sans-serif;
+    letter-spacing: 0.1em;
+    color: var(--rust);
+    background: var(--paper-warm);
+    padding: 2px 8px;
+    border-radius: 3px;
+    margin-bottom: 12px;
+  }
+
+  .quality-desc {
+    font-size: 13.5px;
+    font-family: 'Noto Sans SC', sans-serif;
+    color: var(--ink-light);
+    line-height: 1.75;
+  }
+
+  /* Pull quote */
+  .pull-quote {
+    margin: 48px -20px;
+    padding: 44px 40px;
+    background: var(--ink);
+    color: #fff;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .pull-quote::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(ellipse at 80% 50%, rgba(176,90,42,0.3), transparent 60%);
+  }
+
+  .pull-quote p {
+    font-size: clamp(18px, 2.5vw, 22px);
+    font-weight: 300;
+    line-height: 1.8;
+    color: rgba(255,255,255,0.92);
+    position: relative;
+    z-index: 1;
+    margin-bottom: 0;
+  }
+
+  .pull-quote em {
+    font-style: normal;
+    color: var(--gold-light);
+  }
+
+  /* Special Dark section */
+  .alaya-section {
+    background: linear-gradient(135deg, #1c1410 0%, #2d2018 100%);
+    color: #fff;
+    padding: 48px 40px;
+    margin: 48px -20px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .alaya-section::after {
+    content: '认知缺口';
+    position: absolute;
+    right: 20px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 92px;
+    font-weight: 700;
+    font-family: 'Noto Serif SC', serif;
+    color: rgba(255,255,255,0.03);
+    pointer-events: none;
+    letter-spacing: 0.1em;
+  }
+
+  .alaya-section .section-title {
+    color: #fff;
+  }
+
+  .alaya-section .section-title span {
+    color: var(--blush);
+  }
+
+  .alaya-section p {
+    color: rgba(255,255,255,0.75);
+  }
+
+  .alaya-section .section-num {
+    color: var(--blush);
+    opacity: 0.45;
+  }
+
+  .alaya-cards {
+    display: grid;
+    gap: 16px;
+    margin: 28px 0;
+  }
+
+  .alaya-card {
+    display: flex;
+    align-items: flex-start;
+    gap: 16px;
+    padding: 18px 20px;
+    background: rgba(255,255,255,0.05);
+    border-radius: 6px;
+    border: 1px solid rgba(255,255,255,0.08);
+  }
+
+  .alaya-card-icon {
+    font-size: 22px;
+    flex-shrink: 0;
+    margin-top: 2px;
+  }
+
+  .alaya-card-title {
+    font-size: 16px;
+    font-weight: 500;
+    color: var(--gold-light);
+    margin-bottom: 6px;
+    font-family: 'Noto Serif SC', serif;
+  }
+
+  .alaya-card-text {
+    font-family: 'Noto Sans SC', sans-serif;
+    font-size: 13.5px;
+    color: rgba(255,255,255,0.72);
+    line-height: 1.75;
+  }
+
+  /* Closing */
+  .closing {
+    margin-top: 80px;
+    padding-top: 60px;
+    border-top: 1px solid var(--line);
+    text-align: center;
+  }
+
+  .closing-ornament {
+    font-size: 32px;
+    margin-bottom: 28px;
+    display: block;
+    opacity: 0.4;
+  }
+
+  .closing-text {
+    font-size: clamp(19px, 2.8vw, 25px);
+    font-weight: 300;
+    line-height: 1.85;
+    color: var(--ink);
+    max-width: 620px;
+    margin: 0 auto 32px;
+  }
+
+  .closing-text em {
+    font-style: normal;
+    color: var(--rust);
+    font-weight: 500;
+  }
+
+  .closing-sign {
+    font-family: 'Noto Sans SC', sans-serif;
+    font-size: 12px;
+    color: var(--ink-light);
+    letter-spacing: 0.3em;
+    opacity: 0.6;
+  }
+
+  /* Divider */
+  .divider {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin: 48px 0;
+    opacity: 0.3;
+  }
+
+  .divider-line { flex: 1; height: 1px; background: var(--ink); }
+  .divider-dot { width: 4px; height: 4px; background: var(--rust); border-radius: 50%; }
+
+  /* Animations */
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: none; }
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+
+  /* Responsive */
+  @media (max-width: 600px) {
+    .cover { padding: 40px 24px 36px; }
+    .main { padding: 48px 24px 80px; }
+    .pull-quote, .alaya-section { margin: 32px -10px; padding: 32px 24px; }
+    .qualities { grid-template-columns: 1fr; }
+    .opener::before { font-size: 80px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- Cover -->
+<div class="cover">
+  <div class="cover-bg"></div>
+  <div class="cover-deco"></div>
+  <div class="cover-circle"></div>
+  <div class="cover-circle"></div>
+  <div class="cover-circle"></div>
+
+  <div class="cover-content">
+    <p class="cover-label">认知科学 · 提问力 · 自主探索</p>
+    <h1 class="cover-title">
+      认知性好奇
+      <em>AI时代最稀缺的提问力</em>
+    </h1>
+    <p class="cover-subtitle">从无字绘本《海底的秘密》出发：在答案廉价的时代，如何保护孩子亲手填补认知缺口的能力</p>
+    <div class="cover-line"></div>
+    <p class="cover-quote">"“提问”只是入口，真正占大头的，是中间那段没人催、没人帮、得自己一步步走完的过程。"</p>
+  </div>
+
+  <div class="cover-footer">
+    <div class="cover-nav">
+      <span>好奇心链路</span>
+      <span>知觉与认知</span>
+      <span>保护认知缺口</span>
+    </div>
+    <div class="cover-scroll">
+      <div class="scroll-line"></div>
+      <span>向下阅读</span>
+    </div>
+  </div>
+</div>
+
+<!-- Main -->
+<main class="main">
+
+  <!-- Opener -->
+  <div class="opener">
+    <p>前AI时代，稀缺的是答案；AI时代，稀缺的变成了<em>问题本身</em>——那种能真正推进思考的问题：让你看到别人还没看到的角度，本身就是一种智识贡献的问题。</p>
+  </div>
+
+  <!-- Section 1 -->
+  <div class="section" id="s1">
+    <div class="section-header">
+      <span class="section-num">一</span>
+      <h2 class="section-title">
+        <span>The Curiosity Chain</span>
+        《海底的秘密》：一条完整的好奇心链路
+      </h2>
+    </div>
+    <p>大卫·威斯纳那本拿过凯迪克金奖的绘本《海底的秘密》全程一个字都没有，但很容易看懂。故事很简单——一个男孩在海边玩，捡到一台被海浪冲上岸、没人认领的旧式水下相机。他没有立刻扔掉，他拆开相机后盖，发现里面还有一卷完好的胶卷。</p>
+    <p>他跑到商场的冲印店把胶卷洗出来，结果照片里全是难以置信的画面：藏在鱼群里的机械鱼，窝在沙发里看书的大章鱼，背着整座城市的巨型海龟，看起来像小岛、其实是巨型海星的“群岛”……所有照片中最有趣的一幕是一个女孩举着一张照片，照片里又是一个男孩举着照片，再往里，又是一个，又是一个……一层层倒推回去，原来这台相机已经漂流了好几代人，经过了好多个孩子的手。</p>
+    <p>如果把男孩在书里做的事一步步列出来，会发现好奇心其实是一条完整的链路：</p>
+
+    <div class="chain-flow">
+      <span class="chain-step">注意到不寻常的事</span>
+      <span class="chain-arrow">→</span>
+      <span class="chain-step">产生疑问</span>
+      <span class="chain-arrow">→</span>
+      <span class="chain-step">主动找办法验证</span>
+      <span class="chain-arrow">→</span>
+      <span class="chain-step">获得新理解</span>
+      <span class="chain-arrow">→</span>
+      <span class="chain-step">生出更大的疑问</span>
+    </div>
+
+    <p>男孩注意到沙滩上有个没人认领的相机；自己拆开研究；发现胶卷后想办法找冲印店洗出来；拿到照片后又拿着工具细看角落里一开始没看懂的细节。每解决一层疑问，新的疑问立刻冒出来——直到他发现那张“照片里的照片”，疑问被拉到了一个完全不同的时间尺度上。</p>
+    <div class="highlight">
+      <p>这条链路里，<em>“提问”只是入口</em>，真正占大头的，是中间那段没人催、没人帮、得自己一步步走完的过程。</p>
+    </div>
+  </div>
+
+  <div class="divider"><div class="divider-line"></div><div class="divider-dot"></div><div class="divider-line"></div></div>
+
+  <!-- Section 2 -->
+  <div class="section" id="s2">
+    <div class="section-header">
+      <span class="section-num">二</span>
+      <h2 class="section-title">
+        <span>Perceptual vs. Epistemic</span>
+        知觉性好奇与认知性好奇
+      </h2>
+    </div>
+    <p>我们平时说一个孩子“有好奇心”，通常指的是：他爱问为什么，对什么都感兴趣。这种好奇心当然好，但它有个准确的名字——知觉性好奇。它是人类看到新奇事物时的本能反应，就像遇到响动会转头看一眼，每个健康的孩子生来就有。</p>
+    <p>但心理学上还有另一种好奇心，叫做认知性好奇。它不是被新鲜感触发的，而是被缺口触发的——一个问题在脑子里打开了，答案却没来，这个“还没被填上”的状态会产生一种拉力，驱动人主动去找、去试、去想，直到把缺口填上。</p>
+
+    <div class="qualities">
+      <div class="quality-card">
+        <span class="quality-icon">👀</span>
+        <div class="quality-name">知觉性好奇</div>
+        <span class="quality-tag">新鲜感触发 · 本能反应</span>
+        <div class="quality-desc">看到新奇事物时的本能反应，往往止步于获得一个既得的答案。一百个孩子在沙滩上看到相机，可能都会产生知觉性好奇。</div>
+      </div>
+      <div class="quality-card">
+        <span class="quality-icon">🧭</span>
+        <div class="quality-name">认知性好奇</div>
+        <span class="quality-tag">认知缺口触发 · 主动探索</span>
+        <div class="quality-desc">被“还没被填上”的缺口产生的拉力驱动，主动去找、去试、去想。像书中的小男孩一样一步步揭晓秘密的，却寥寥无几。</div>
+      </div>
+    </div>
+
+    <p>两种好奇心最大的区别在于：<strong>谁在负责找答案。</strong>知觉性好奇往往止步于获得一个既得的答案，而认知性好奇往往会驱动自己去寻找答案。</p>
+  </div>
+
+  <div class="divider"><div class="divider-line"></div><div class="divider-dot"></div><div class="divider-line"></div></div>
+
+  <!-- Section 3 -->
+  <div class="section" id="s3">
+    <div class="section-header">
+      <span class="section-num">三</span>
+      <h2 class="section-title">
+        <span>Scarcity in the AI Era</span>
+        为什么AI时代更需要认知性好奇？
+      </h2>
+    </div>
+    <p>认知性好奇为什么会在AI时代显得如此重要？有一个底层逻辑：价值永远流向稀缺的东西。前AI时代，稀缺的是答案。谁查到了资料、记住了公式、想明白了逻辑，谁就有优势。AI时代，稀缺的变成了问题本身——那种能真正推进思考的问题：让你看到别人还没看到的角度，本身就是一种智识贡献的问题。</p>
+    <p>认知性好奇，本质上是一台问题生成机器。它不满足于已有的解释，持续感受到理解上的缺口，不断追着问“为什么是这样”“还差什么”“这两件事有没有关系”。这个功能，在答案廉价的时代，才真正浮出水面，成为核心。</p>
+    
+    <div class="highlight">
+      <p>AI很擅长回答被问到的问题，但它不擅长判断哪些问题值得问——一个认知性好奇心强的人，问出的问题有层次、有纵深，能识别自己理解的盲区；<em>AI在他手里是一把好刀</em>。</p>
+    </div>
+  </div>
+
+  <!-- Pull Quote -->
+  <div class="pull-quote section" id="pq">
+    <p>那种“所有人都这么说，但我总感觉哪里不对”的模糊不适感，是认知性好奇被调度开时的状态。<em>“这件事应该朝这个方向去理解”</em>那种跳跃——往往发生在某个人对现有的解释框架感到根本性的不满意。<em>它无法被AI生成，因为AI的训练数据就是现有知识的总和。</em></p>
+  </div>
+
+  <!-- Section 4: Dark Section for Protecting Cognitive Curiosity -->
+  <div class="section alaya-section" id="s4">
+    <div class="section-header">
+      <span class="section-num">四</span>
+      <h2 class="section-title">
+        <span>Guarding the Process</span>
+        护住三个环节：如何保护认知性好奇
+      </h2>
+    </div>
+    <p>前面说的是认知性好奇为什么重要。但重要的东西如果没人管，一样会枯萎。回到那台漂流的相机——它之所以能定义认知性好奇，是因为三件事同时发生：一个缺口被打开了；男孩自己去把它填上；填上之后又冒出一个更大的缺口。保护认知性好奇，其实就是分别护住这三个环节。</p>
+
+    <div class="alaya-cards">
+      <div class="alaya-card">
+        <span class="alaya-card-icon">⏳</span>
+        <div>
+          <div class="alaya-card-title">1. 给缺口留一点的时间</div>
+          <div class="alaya-card-text">一个问题刚冒出来的时候，答案还没到，这中间有一段空当。好奇心的拉力，就产生在这段空当里。如果空当总是被瞬间填满，缺口还没来得及“打开”就已经“关上”了——好奇心连生长的时间都没有。</div>
+        </div>
+      </div>
+      <div class="alaya-card">
+        <span class="alaya-card-icon">🛠️</span>
+        <div>
+          <div class="alaya-card-title">2. 把“去填缺口”留给孩子</div>
+          <div class="alaya-card-text">别人代劳了这一步，剩下的就只是“等结果”——好奇心本身也就跟着退化成看客心态。</div>
+        </div>
+      </div>
+      <div class="alaya-card">
+        <span class="alaya-card-icon">🔭</span>
+        <div>
+          <div class="alaya-card-title">3. 让疑问链路往前延伸</div>
+          <div class="alaya-card-text">绘本中的男孩每解决一层疑问，新的疑问立刻冒出来。这条链路的关键不是某一次解惑，而是解惑之后还能不能继续追问。尽可能帮孩子把这条链路往前延伸，让好奇心往深处走。</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Closing -->
+  <div class="closing section" id="closing">
+    <span class="closing-ornament">✦</span>
+    <p class="closing-text">
+      认知性好奇不是一个瞬间的反应，而是一段需要被完整走完的过程——从<em>打开缺口</em>，到<em>亲自去填</em>，再到从新理解里<em>看见更大的缺口</em>。保护它，说到底就是保护这段过程不被跳过、不被代劳、不被提前中止。
+    </p>
+    <p class="closing-sign">· 认知性好奇 · AI时代最稀缺的提问力 ·</p>
+  </div>
+
+</main>
+
+<script>
+  // Intersection Observer 滚动渐入效果
+  const sections = document.querySelectorAll('.section');
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('visible');
+      }
+    });
+  }, { threshold: 0.1, rootMargin: '0px 0px -60px 0px' });
+
+  sections.forEach(s => observer.observe(s));
+</script>
+</body>
+</html>
